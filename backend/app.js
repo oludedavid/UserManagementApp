@@ -1,5 +1,7 @@
 const { usersDbUri, app, mongoose, port } = require("./config");
+const cors = require("cors"); // Import the cors package
 const User = require("./models/User");
+const express = require("express");
 
 mongoose.connect(usersDbUri, {
   useNewUrlParser: true,
@@ -12,8 +14,11 @@ db.once("open", () => {
   console.log("Connected to MongoDB");
 });
 
+app.use(cors()); // Enable CORS for all routes
+app.use(express.json()); // Middleware to parse JSON request bodies
+
 // Create new user route
-app.post("/users", async (req, res) => {
+app.post("/api/users", async (req, res) => {
   try {
     const user = new User(req.body);
     await user.save();
@@ -23,8 +28,8 @@ app.post("/users", async (req, res) => {
   }
 });
 
-//Read all users route
-app.get("/users", async (req, res) => {
+// Read all users route
+app.get("/api/users", async (req, res) => {
   try {
     const users = await User.find();
     res.json(users);
@@ -34,7 +39,7 @@ app.get("/users", async (req, res) => {
 });
 
 // Update user route
-app.put("/users/:id", async (req, res) => {
+app.put("/api/users/:id", async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -48,8 +53,9 @@ app.put("/users/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 // Delete user route
-app.delete("/users/:id", async (req, res) => {
+app.delete("/api/users/:id", async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) {
@@ -62,7 +68,7 @@ app.delete("/users/:id", async (req, res) => {
 });
 
 // Get single user by ID route
-app.get("/users/:id", async (req, res) => {
+app.get("/api/users/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
